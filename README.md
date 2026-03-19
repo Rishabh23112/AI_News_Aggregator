@@ -21,63 +21,108 @@ graph TD
     ContentGen -->|Simulation| Log[Broadcast Logs]
 ```
 
-## 2. Database Schema
+## 2. Prerequisites
 
-The system uses **PostgreSQL** with the **pgvector** extension for semantic search and deduplication.
+Before you begin, ensure you have the following installed:
+- **Docker & Docker Compose** (Recommended)
+- **Python 3.10+** (For local backend setup)
+- **Node.js 18+ & npm** (For local frontend setup)
+- **PostgreSQL** with **pgvector** extension (For local database setup)
+- **Google Gemini API Key** (Required for AI features)
 
-### Key Tables:
-- **`sources`**: Metadata for the 20+ monitored AI blogs and feeds.
-- **`news_items`**: Normalized news storage including `title`, `summary`, `url`, and a `vector(384)` embedding for deduplication.
-- **`favorites`**: Links users to their saved news items.
-- **`broadcast_logs`**: History of all generated social media/email posts.
-- **`users`**: Minimal user management for session/favorite tracking.
+## 3. Environment Variables
 
-## 3. Implementation Logic & Decisions
+The project uses two separate environment files to manage configuration:
+
+### A. Root `.env` (Backend & Infrastructure)
+Used by the FastAPI backend and Docker Compose. Create this in the project root.
+
+| Variable | Description |
+| :--- | :--- |
+| `GEMINI_API_KEY` | Your Google Gemini API Key (Required for AI features). |
+| `DATABASE_URL` | PostgreSQL Connection String (e.g., Supabase or local). |
+
+### B. `frontend/.env.local` (Frontend)
+Used by the Next.js frontend. Create this in the `frontend/` directory.
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_API_URL` | The URL of your running FastAPI backend. | `http://localhost:8000` |
+
+## 4. Getting Started (Docker - Recommended)
+
+The easiest way to run the entire stack is using Docker Compose.
+
+1. Clone the repository.
+2. Create your `.env` file as described above.
+3. Start the services:
+   ```bash
+   docker-compose up --build
+   ```
+4. Access the applications:
+   - **Frontend (Dashboard)**: [http://localhost:3000](http://localhost:3000)
+   - **Backend (API Docs)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+## 5. Local Setup (Development)
+
+If you prefer to run the services individually for development:
+
+### A. Database
+Ensure PostgreSQL is running and the `pgvector` extension is enabled. You can run the database via Docker while keeping the app local:
+```bash
+docker-compose up db -d
+```
+
+### B. Backend (FastAPI)
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Run the server:
+   ```bash
+   uvicorn main:app --reload --port 8000
+   ```
+
+### C. Frontend (Next.js)
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## 6. Implementation Logic
 
 ### Deduplication Strategy
 To ensure a high-signal feed, the system employs **Dual-Layer Deduplication**:
 1. **Hash-based**: Prevents exact URL or title duplication at the database level.
-2. **Vector-based**: Computes a cosine distance between the new item's embedding and existing items. Items with a similarity > 0.90 are flagged as duplicates but kept in the DB for reference.
+2. **Vector-based**: Computes a cosine distance between the new item's embedding and existing items. Items with a similarity > 0.90 are flagged as duplicates.
 
 ### AI Integration
-- **Summarization & Sentiment**: Uses Gemini to analyze complex research papers and blog posts.
-- **AI Assistant**: A RAG-enabled chatbot that allows users to query the ingested news using natural language.
-- **Social Media Generation**: Automated conversion of technical news into high-engagement LinkedIn posts, emails, and WhatsApp summaries.
+- **Summarization**: Uses Gemini to analyze complex research papers and blog posts.
+- **AI Assistant**: A RAG-enabled chatbot that allows users to query ingested news.
+- **Broadcast Service**: Automated conversion of news into LinkedIn posts and emails.
 
-## 4. Backend API Endpoints
+## 7. Troubleshooting
 
-| Category | Endpoint | Description |
-| :--- | :--- | :--- |
-| **News** | `GET /news/` | Fetch latest feed (filtered/searchable) |
-| **Ingestion**| `POST /news/refresh` | Manually trigger a crawl of all sources |
-| **Favorites**| `POST /favorites/` | Save an item to the dashboard |
-| **Broadcast**| `POST /broadcast/` | Generate AI post and simulate send |
-| **Agent** | `GET /agent/ask` | Query the RAG-based AI assistant |
-
-## 5. Deployment Setup (Docker)
-
-### Prerequisites
-- Docker & Docker Compose
-- Google Gemini API Key
-
-### Quickstart
-1. Clone the repository.
-2. Create a `.env` file in the root:
-   ```env
-   GEMINI_API_KEY=your_key_here
-   ```
-3. Run the deployment command:
-   ```bash
-   docker-compose up --build
-   ```
-
-The dashboard will be available at **`http://localhost:3000`**.
-
-## 6. Project structure
-- `/backend`: FastAPI service, ingestion worker, and AI agents.
-- `/frontend`: Next.js dashboard with responsive Tailwind CSS design.
-- `docker-compose.yml`: Multi-container orchestration (Web, UI, DB).
+- **Database Connection Error**: Ensure `DATABASE_URL` is correct and the `db` service is healthy.
+- **Gemini API Errors**: Check your `GEMINI_API_KEY` and ensure it has sufficient quota.
+- **Frontend not reaching Backend**: Verify `NEXT_PUBLIC_API_URL` matches your backend's address in `frontend/.env.local` or Docker environment.
 
 ---
-
 
