@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+python-dotenv
+sqlalchemy
+langchain
+langchain-community
+pydantic
+langchain-google-genai
+langchain-huggingface
+sentence-transformers
+pgvector
+feedparser
