@@ -1,7 +1,7 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.tools import tool
 from langchain.agents import create_tool_calling_agent, AgentExecutor
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from sqlalchemy.orm import Session
 from core.db import SessionLocal
@@ -19,7 +19,7 @@ llm = ChatGoogleGenerativeAI(
 
 
 
-@tool
+@tool("get_latest_news")
 def get_latest_news(limit: int = 5) -> str:
     """Fetch the latest AI news articles. Use this when the user asks for new or recent news."""
     db: Session = SessionLocal()
@@ -34,7 +34,7 @@ def get_latest_news(limit: int = 5) -> str:
 
 
 
-@tool
+@tool("search_news")
 def search_news(query: str) -> str:
     """Search for relevant news articles based on a specific query or topic."""
     db: Session = SessionLocal()
@@ -60,7 +60,7 @@ def search_news(query: str) -> str:
 prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a professional AI news assistant. Provide clean, insightful, and well-organized answers. Use Markdown headers (###) for news titles and bullet points for summaries. Always include clickable links."),
     ("user", "{input}"),
-    ("placeholder", "{agent_scratchpad}")
+    MessagesPlaceholder(variable_name="agent_scratchpad")
 ])
 
 
