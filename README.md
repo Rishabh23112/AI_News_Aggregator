@@ -17,7 +17,7 @@ graph TD
     Server -->|Agentic Search| Assistant[AI Assistant]
     
     UI -->|Trigger| Broadcast[AI Broadcast Service]
-    Broadcast -->|Gemini 1.5| ContentGen[LinkedIn/Email Content]
+    Broadcast -->|Gemini 2.5| ContentGen[LinkedIn/Email Content]
     ContentGen -->|Simulation| Log[Broadcast Logs]
 ```
 
