@@ -2,6 +2,13 @@
 
 A production-ready MVP for aggregating, deduplicating, and broadcasting AI-related news from 20+ high-signal sources.
 
+## Video
+
+
+https://github.com/user-attachments/assets/838a468a-21f3-4a0c-8715-912a51ad5ce3
+
+
+
 ## 1. Architecture Diagram
 
 ```mermaid
