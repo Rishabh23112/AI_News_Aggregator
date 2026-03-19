@@ -4,7 +4,7 @@ from core.config import GEMINI_API_KEY
 from services.tools_async import get_latest_news_async, search_news_async
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     api_key=GEMINI_API_KEY,
     temperature=0.3
 )
