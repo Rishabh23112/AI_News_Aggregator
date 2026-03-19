@@ -11,10 +11,11 @@ from core.config import GEMINI_API_KEY
 
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-3-flash-preview",
+    model="gemini-2.5-flash",
     api_key=GEMINI_API_KEY,
     temperature=0
 )
+
 
 
 
@@ -25,10 +26,12 @@ def get_latest_news(limit: int = 5) -> str:
     news = db.query(NewsItem).order_by(NewsItem.published_at.desc()).limit(limit).all()
     db.close()
 
-    return "\n\n".join([
-        f"Title: {n.title}\nSummary: {n.summary}\nURL: {n.url}"
+    return "\n\n---\n\n".join([
+        f"### {n.title}\n\n{n.summary}\n\n[Read more]({n.url})"
         for n in news
     ])
+
+
 
 
 @tool
@@ -47,17 +50,19 @@ def search_news(query: str) -> str:
     )
     db.close()
 
-    return "\n\n".join([
-        f"Title: {n.title}\nSummary: {n.summary}\nURL: {n.url}"
+    return "\n\n---\n\n".join([
+        f"### {n.title}\n\n{n.summary}\n\n[Read more]({n.url})"
         for n in news
     ])
 
 
+
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an AI news assistant. Use tools to answer queries."),
+    ("system", "You are a professional AI news assistant. Provide clean, insightful, and well-organized answers. Use Markdown headers (###) for news titles and bullet points for summaries. Always include clickable links."),
     ("user", "{input}"),
     ("placeholder", "{agent_scratchpad}")
 ])
+
 
 
 tools = [get_latest_news, search_news]

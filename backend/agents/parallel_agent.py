@@ -4,7 +4,7 @@ from core.config import GEMINI_API_KEY
 from services.tools_async import get_latest_news_async, search_news_async
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-3-flash-preview",
+    model="gemini-2.5-flash",
     api_key=GEMINI_API_KEY,
     temperature=0.3
 )
@@ -21,21 +21,21 @@ async def run_parallel_agent(query: str):
     )
 
     combined_context = f"""
-Latest News:
-{latest}
+    Latest News:
+    {latest}
 
-Relevant News:
-{search}
-"""
+    Relevant News:
+    {search}
+    """
 
     response = await llm.ainvoke(f"""
-User Query: {query}
+    User Query: {query}
 
-Use the following context to answer:
+    Use the following context to answer:
 
-{combined_context}
+    {combined_context}
 
-Provide a clean, insightful answer.
-""")
+    Provide a clean, insightful answer.
+    """)
 
     return response.content

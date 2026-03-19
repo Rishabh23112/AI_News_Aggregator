@@ -4,11 +4,12 @@ from sqlalchemy import or_
 from typing import Optional
 from core.db import get_db
 from models.models import NewsItem, Source
+from models.schemas import NewsResponse
 from services.ingestion import fetch_rss
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("/", response_model=list[NewsResponse])
 def get_news(
     keyword: Optional[str] = Query(None, description="Search by keyword in title or summary"),
     source_id: Optional[int] = Query(None, description="Filter by source ID"),
@@ -22,7 +23,7 @@ def get_news(
         
     return query.order_by(NewsItem.published_at.desc()).limit(50).all()
 
-@router.get("/{news_id}")
+@router.get("/{news_id}", response_model=NewsResponse)
 def get_news_by_id(news_id: int, db: Session = Depends(get_db)):
     news = db.query(NewsItem).filter_by(id=news_id).first()
     if not news:

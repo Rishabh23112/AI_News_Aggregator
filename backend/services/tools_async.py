@@ -14,10 +14,12 @@ async def get_latest_news_async(limit=5):
 
     news = await asyncio.to_thread(db_call)
 
-    return "\n\n".join([
-        f"Title: {n.title}\nSummary: {n.summary}\nURL: {n.url}"
+    return "\n\n---\n\n".join([
+        f"### {n.title}\n\n{n.summary}\n\n[Read more]({n.url})"
         for n in news
     ])
+
+
 
 
 async def search_news_async(query: str):
@@ -37,7 +39,7 @@ async def search_news_async(query: str):
 
     news = await asyncio.to_thread(db_call)
 
-    return "\n\n".join([
-        f"Title: {n.title}\nSummary: {n.summary}\nURL: {n.url}"
+    return "\n\n---\n\n".join([
+        f"### {n.title}\n\n{n.summary}\n\n[Read more]({n.url})"
         for n in news
     ])

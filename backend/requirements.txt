@@ -10,3 +10,4 @@ langchain-huggingface
 sentence-transformers
 pgvector
 feedparser
+psycopg2-binary

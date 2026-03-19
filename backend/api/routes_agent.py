@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from agents.news_agent import run_agent_async, run_agent_stream
 from agents.parallel_agent import run_parallel_agent
 
-router = APIRouter(prefix="/agent", tags=["Agent"])
+router = APIRouter(tags=["Agent"])
 
 
 @router.get("/ask")

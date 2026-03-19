@@ -5,6 +5,16 @@ from datetime import datetime
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import ARRAY
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, nullable=True)
+    role = Column(String, default="user")
+
+    favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
+
 class Source(Base):
     __tablename__ = "sources"
     id = Column(Integer, primary_key=True)
@@ -34,20 +44,27 @@ class NewsItem(Base):
 
     embedding = Column(Vector(384))
     impact_score = Column(Float, default=0.0)
+    discussion_url = Column(String)
 
 class Favorite(Base):
     __tablename__ = "favorites"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     news_item_id = Column(Integer, ForeignKey("news_items.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="favorites")
+    broadcast_logs = relationship("BroadcastLog", back_populates="favorite", cascade="all, delete-orphan")
+
 
 class BroadcastLog(Base):
     __tablename__ = "broadcast_logs"
 
     id = Column(Integer, primary_key=True)
-    favorite_id = Column(Integer, ForeignKey("favorites.id"))
+    favorite_id = Column(Integer, ForeignKey("favorites.id", ondelete="CASCADE"))
     platform = Column(String)
     status = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
+
+    favorite = relationship("Favorite", back_populates="broadcast_logs")

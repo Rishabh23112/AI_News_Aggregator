@@ -3,9 +3,37 @@ from datetime import datetime
 from typing import Optional, List
 
 
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: Optional[str] = None
+    role: str
+
+    class Config:
+        from_attributes = True
+
+
+class UserCreate(BaseModel):
+    name: str
+    email: Optional[str] = None
+    role: Optional[str] = "user"
+
+
+
+class SourceResponse(BaseModel):
+    id: int
+    name: str
+    url: str
+    type: str
+    active: bool
+
+    class Config:
+        from_attributes = True
+
 
 class NewsResponse(BaseModel):
     id: int
+    source_id: Optional[int] = None
     title: str
     summary: str
     author: Optional[str]
@@ -13,6 +41,7 @@ class NewsResponse(BaseModel):
     published_at: datetime
     tags: Optional[List[str]]
     impact_score: Optional[float]
+    is_duplicate: Optional[bool] = None
 
     class Config:
         from_attributes = True
@@ -20,17 +49,18 @@ class NewsResponse(BaseModel):
 
 class FavoriteCreate(BaseModel):
     user_id: int
-    news_item_id: int
+    news_id: int
 
 
 class FavoriteResponse(BaseModel):
-    id: int
+    favorite_id: int
     user_id: int
-    news_item_id: int
     created_at: datetime
+    news_item: NewsResponse
 
-    class Config:
-        from_attributes = True
+class FavoriteAddResponse(BaseModel):
+    msg: str
+    favorite_id: int
 
 
 class BroadcastRequest(BaseModel):
@@ -41,3 +71,4 @@ class BroadcastResponse(BaseModel):
     platform: str
     content: str
     status: str
+    message: Optional[str] = None

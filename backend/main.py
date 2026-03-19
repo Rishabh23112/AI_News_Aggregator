@@ -1,18 +1,22 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from api import routes_news, routes_favorites, routes_broadcast, routes_agent
+from api import routes_news, routes_favorites, routes_broadcast, routes_agent, routes_users, routes_sources
 from core.db import engine, Base
 import models.models  
 from sqlalchemy import text
+import os
 
 with engine.connect() as conn:
     conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
     try:
-        conn.execute(text("TRUNCATE TABLE news_items CASCADE"))
+        if os.getenv("RESET_DB_ON_START", "").lower() in {"1", "true", "yes"}:
+            conn.execute(text("TRUNCATE TABLE news_items CASCADE"))
+        
+        conn.execute(text("ALTER TABLE news_items ADD COLUMN IF NOT EXISTS discussion_url VARCHAR"))
         conn.execute(text("ALTER TABLE news_items ALTER COLUMN embedding TYPE vector(384)"))
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Migration notice: {e}")
     conn.commit()
 
 Base.metadata.create_all(bind=engine)
@@ -21,7 +25,7 @@ from contextlib import asynccontextmanager
 import threading
 from worker.scheduler import run as run_scheduler
 from core.db import SessionLocal
-from models.models import Source
+from models.models import Source, User
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -50,6 +54,13 @@ async def lifespan(app: FastAPI):
             Source(name="Stability AI Blog", url="https://stability.ai/news?format=rss", type="rss", active=True)
         ])
         db.commit()
+
+    if db.query(User).count() == 0:
+        db.add_all([
+            User(name="Admin", email="admin@example.com", role="admin"),
+            User(name="Analyst", email="analyst@example.com", role="user"),
+        ])
+        db.commit()
     db.close()
     
     thread = threading.Thread(target=run_scheduler, daemon=True)
@@ -60,7 +71,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -70,6 +81,8 @@ app.include_router(routes_news.router, prefix="/news", tags=["news"])
 app.include_router(routes_favorites.router, prefix="/favorites", tags=["favorites"])
 app.include_router(routes_broadcast.router, prefix="/broadcast", tags=["broadcast"])
 app.include_router(routes_agent.router, prefix="/agent", tags=["agent"])
+app.include_router(routes_users.router, prefix="/users", tags=["users"])
+app.include_router(routes_sources.router, prefix="/sources", tags=["sources"])
 
 @app.get("/", include_in_schema=False)
 def root():
