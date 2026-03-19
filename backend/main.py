@@ -7,19 +7,22 @@ import models.models
 from sqlalchemy import text
 import os
 
-with engine.connect() as conn:
+# 1. Create extension (committed immediately)
+with engine.begin() as conn:
     conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+
+# 2. Create all tables
+Base.metadata.create_all(bind=engine)
+
+# 3. Handle migrations/updates
+with engine.begin() as conn:
     try:
         if os.getenv("RESET_DB_ON_START", "").lower() in {"1", "true", "yes"}:
             conn.execute(text("TRUNCATE TABLE news_items CASCADE"))
         
         conn.execute(text("ALTER TABLE news_items ADD COLUMN IF NOT EXISTS discussion_url VARCHAR"))
-        conn.execute(text("ALTER TABLE news_items ALTER COLUMN embedding TYPE vector(384)"))
     except Exception as e:
         print(f"Migration notice: {e}")
-    conn.commit()
-
-Base.metadata.create_all(bind=engine)
 
 from contextlib import asynccontextmanager
 import threading
