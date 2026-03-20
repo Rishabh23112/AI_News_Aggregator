@@ -24,7 +24,7 @@ graph TD
     Server -->|Agentic Search| Assistant[AI Assistant]
     
     UI -->|Trigger| Broadcast[AI Broadcast Service]
-    Broadcast -->|Gemini 2.5| ContentGen[LinkedIn/Email Content]
+    Broadcast -->|Gemini 2.5| ContentGen[LinkedIn/Email/Whatsapp Content]
     ContentGen -->|Simulation| Log[Broadcast Logs]
 ```
 
@@ -34,7 +34,7 @@ Before you begin, ensure you have the following installed:
 - **Docker & Docker Compose** (Recommended)
 - **Python 3.10+** (For local backend setup)
 - **Node.js 18+ & npm** (For local frontend setup)
-- **PostgreSQL** with **pgvector** extension (For local database setup)
+- **PostgreSQL** with **pgvector** extension 
 - **Google Gemini API Key** (Required for AI features)
 
 ## 3. Environment Variables
